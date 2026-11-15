@@ -1,0 +1,12 @@
+{
+  "name": "ferdows-hospital",
+  "version": "1.0.0",
+  "description": "Ferdows Specialized Hospital Website & HMS Database",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

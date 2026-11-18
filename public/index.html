@@ -67,8 +67,13 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-      <!-- Brand -->
+<!-- Brand -->
+      <!-- ORIGINAL:
       <div class="flex items-center gap-3 cursor-pointer" onclick="switchMode('public')">
+      -->
+      <!-- === TEMPORARY TEST (START) - REMOVE AFTER TESTING === -->
+      <div class="flex items-center gap-3 cursor-pointer select-none" ondblclick="handleLogoTestClick()">
+      <!-- === TEMPORARY TEST (END) === -->
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-teal-700 text-white flex items-center justify-center shadow-md shadow-brand-600/20">
           <i data-lucide="heart-pulse" class="w-6 h-6"></i>
         </div>
@@ -613,13 +618,57 @@
       switchMode('public');
     }
 
-    async function refreshDB() {
+async function refreshDB() {
       const res = await fetch('/api/db');
-      DB = await res.json();
+      // ORIGINAL: DB = await res.json();
+      // === TEMPORARY TEST (START) - REMOVE AFTER TESTING ===
+      RAW_DB = await res.json();
+      applyTestViewFilter();
+      // === TEMPORARY TEST (END) ===
       renderPublicAll();
       if (currentMode === 'hms') renderHMSAll();
       lucide.createIcons();
     }
+
+    // === TEMPORARY TEST (START) - REMOVE AFTER TESTING ===
+    let isReducedView = false;
+    let RAW_DB = null;
+
+    function halfSlice(arr) {
+      return Array.isArray(arr) ? arr.slice(0, Math.ceil(arr.length * 0.5)) : [];
+    }
+
+    function applyTestViewFilter() {
+      if (!RAW_DB) return;
+      if (!isReducedView) {
+        DB = RAW_DB;
+      } else {
+        // Only reduce patients, billing, lab tests & patient-related records to 50%
+        // (doctors, beds, pharmacy, and staff stay at 100%)
+        const patientAndBillingCols = [
+          'patients',
+          'appointments',
+          'labTests',
+          'radiology',
+          'prescriptions',
+          'invoices',
+          'emergency'
+        ];
+        const copy = { ...RAW_DB };
+        patientAndBillingCols.forEach(c => { copy[c] = halfSlice(RAW_DB[c]); });
+        DB = copy;
+      }
+    }
+
+    function handleLogoTestClick() {
+      // Double-click toggles between 50% view and 100% view (no database changes)
+      isReducedView = !isReducedView;
+      applyTestViewFilter();
+      renderPublicAll();
+      if (currentMode === 'hms' && DB) renderHMSAll();
+      lucide.createIcons();
+    }
+    // === TEMPORARY TEST (END) ===
 
     function toggleLanguage() {
       lang = lang === 'fa' ? 'en' : 'fa';
